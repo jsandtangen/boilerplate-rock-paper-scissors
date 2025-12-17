@@ -1,18 +1,18 @@
 
 def player(prev_play, state={
-    "round": 0,
-    "opp": [],
-    "me": [],
-    "pred_last": {},         # what we predicted opponent would play last round
-    "score": {               # hypothesis match counts
-        "quincy": [0, 0],    # [matches, total]
+    "round": 0,             # round counter
+    "opp": [],              # opponent's play history
+    "me": [],               # our play history   
+    "pred_last": {},        # what we predicted opponent would play last round
+    "score": {              # hypothesis match counts
+        "quincy": [0, 0],   # [matches, total] for each bot
         "kris":   [0, 0],
         "mrugesh":[0, 0],
         "abbey":  [0, 0],
     }
 }):
     # Helpers
-    beat = {"R": "P", "P": "S", "S": "R"}  # move that beats key
+    beat = {"R": "P", "P": "S", "S": "R"} # what beats what
     def dbl(x):  # beats the move that beats x
         return beat[beat[x]]
 
@@ -39,14 +39,15 @@ def player(prev_play, state={
             if state["pred_last"][bot] == prev_play:
                 state["score"][bot][0] += 1
 
-    # --- Predict opponent's NEXT move under each bot hypothesis ---
+    
+    # --- Generate predictions for each bot ---
 
     # 1) Quincy: fixed cycle due to internal counter implementation
     # Sequence is: R, P, P, S, R, R, P, P, S, R, ... (period 5: "RPPSR")
     quincy_cycle = ["R", "P", "P", "S", "R"]
-    pred_quincy = quincy_cycle[len(state["opp"]) % 5]
+    pred_quincy = quincy_cycle[len(state["opp"]) % 5] 
 
-    # 2) Kris: plays the move that beats OUR previous move
+    # 2) Kris: plays the move that beats our previous move
     if state["me"]:
         pred_kris = beat[state["me"][-1]]
     else:
@@ -94,8 +95,8 @@ def player(prev_play, state={
         m, t = state["score"][bot]
         return (m / t) if t else 0.0
 
-    # After a few rounds, the correct bot stands out strongly.
-    # Prefer "kris" early if it matches, because it's extremely distinctive.
+
+   
     bot_order = ["kris", "quincy", "mrugesh", "abbey"]
     best_bot = max(bot_order, key=acc)
     best_acc = acc(best_bot)
